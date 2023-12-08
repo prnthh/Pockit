@@ -20,25 +20,25 @@ var saveBlob = {
 }
 
 // get sha hash of blob and save it to local storage
-function saveBlobToLocalStorage() {
-	const blobHash = sha256(JSON.stringify(saveBlob));
-	localStorage.setItem('pockitSaveBlob-'+window.pockitId, {saveBlob, blobHash});
-} 
+// function saveBlobToLocalStorage() {
+// 	const blobHash = sha256(JSON.stringify(saveBlob));
+// 	localStorage.setItem('pockitSaveBlob-'+window.pockitId, {saveBlob, blobHash});
+// } 
 
-// load blob from local storage and check if it matches the current blob
-function loadBlobFromLocalStorage() {
-	const blob = localStorage.getItem('pockitSaveBlob'+window.pockitId);
-	if (blob) {
-		console.log("Blob found, loading...");
-		// check if hash matches
-		const blobHash = sha256(JSON.stringify(saveBlob));
-		if (blob && blob.blobHash == blobHash) {
-			saveBlob = blob.saveBlob;
-		}
-	} else {
-		console.log("No blob found, creating new one...");
-	}
-}
+// // load blob from local storage and check if it matches the current blob
+// function loadBlobFromLocalStorage() {
+// 	const blob = localStorage.getItem('pockitSaveBlob'+window.pockitId);
+// 	if (blob) {
+// 		console.log("Blob found, loading...");
+// 		// check if hash matches
+// 		const blobHash = sha256(JSON.stringify(saveBlob));
+// 		if (blob && blob.blobHash == blobHash) {
+// 			saveBlob = blob.saveBlob;
+// 		}
+// 	} else {
+// 		console.log("No blob found, creating new one...");
+// 	}
+// }
 
 // renderer
 const renderer = new THREE.WebGLRenderer();
@@ -403,7 +403,7 @@ function showOptions(chatId) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-	loadBlobFromLocalStorage();
+	// loadBlobFromLocalStorage();
 	loadVRM( defaultModelUrl );
 	loadStage();
 	
