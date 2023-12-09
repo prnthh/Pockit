@@ -419,8 +419,14 @@ document.addEventListener('DOMContentLoaded', function() {
 	// set up model screen
 	let downloadButton = document.getElementById('download-model');
 	downloadButton.onclick = function() {
-		safeDownloadVrm();
+		safeDownloadUrl("https://prnth.com/Pockit/web/"+ window.pockitId + ".vrm");
 	};
+
+	let downloadNewTabButton = document.getElementById('download-newtab');
+	downloadNewTabButton.onclick = function() {
+		safeDownloadUrl("https://prnth.com/Pockit/web/"+ window.pockitId  + ".html");
+	};
+		
 	
 	onBackClick();
 	printToChatOptions("begin");
@@ -430,8 +436,15 @@ document.addEventListener('DOMContentLoaded', function() {
 * UTIL FUNCTIONS
 */
 
-function safeDownloadVrm() {
-	window.open(defaultModelUrl, '_blank');
+function safeDownloadUrl(url) {
+	// also copy link to clipboard
+	var dummy = document.createElement("textarea");
+	document.body.appendChild(dummy);
+	dummy.value = url;
+	dummy.select();
+	document.execCommand("copy");
+	document.body.removeChild(dummy);
+	window.open(url, '_blank');
 }
 
 let currentAnimationIndex = 0; // Keeps track of the current animation

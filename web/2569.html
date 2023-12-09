@@ -1,57 +1,69 @@
 <!DOCTYPE html>
 
 <html>
-	<head>
-		<meta charset="utf-8" />
-		<title>three-vrm example</title>
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
-		/>
-		<style>
-			body {
-				margin: 0;
-			}
+<head>
+	<meta charset="utf-8" />
+	<title>Pockit Console v0.1</title>
+	<meta
+	name="viewport"
+	content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+	/>
+	<link href="./shared/style.css" rel="stylesheet">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+</head>
 
-			canvas {
-				display: block;
-			}
-
-			#divInfo {
-				padding: 8px;
-				position: fixed;
-				background: white;
-			}
-		</style>
-	</head>
-
-	<body>
-		<div id="divInfo">
-			drag and drop <a href="https://www.mixamo.com/" target="_blank" rel="noopener noreferrer">mixamo</a> animation (.fbx)<br />
-			<button onclick="window.open(document.URL, '_blank', 'location=yes,height=680,width=680,scrollbars=yes,status=yes');">
-
-				Open in new tab
-			</button>
+<body>
+	<div id="console">
+		<div id="status-bar">
+			<div style="width:20px"><span id="status-bar-back" class="btn">Back</span></div>
+			<span id="status-bar-title"></span>
+			<span id="status-bar-status" class="btn">0 ♡︎♥ </span>
 		</div>
-
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
-
-		<script type="importmap">
-			{
-				"imports": {
-					"fflate": "https://unpkg.com/fflate@0.7.4/esm/browser.js",
-					"three": "https://unpkg.com/three@0.154.0/build/three.module.js",
-					"three/addons/": "https://unpkg.com/three@0.154.0/examples/jsm/",
-					"@pixiv/three-vrm": "./three-vrm.module.min.js"
-				}
+		<div id="app-container">
+			<!-- App icons will be loaded here -->
+		</div>
+		
+		<!-- Individual app screens will be loaded here -->
+		<div id="screen-container">
+			<div id="Model-screen" class="app-screen">
+				<button id="download-model">Download model (copy to clipboard)</button>
+				<button id="download-newtab">Open in new tab</button>
+			</div>
+			<div id="PhotoBooth-screen" class="app-screen">
+				<div id="pose-list" class="title">📸</div>
+				<div>Continue the story to unlock all poses!</div>
+			</div>
+			<div id="Chat-screen" class="app-screen">
+				<div id="chat-log"></div>
+				<div id="chat-options"></div>
+				
+			</div>
+			<div id="NewsBoard-screen" class="app-screen">
+			</div>
+		</div>
+	</div>
+	
+	<!-- Import maps polyfill -->
+	<!-- Remove this when import maps will be widely supported -->
+	<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+	
+	<script type="importmap">
+		{
+			"imports": {
+				"fflate": "https://unpkg.com/fflate@0.7.4/esm/browser.js",
+				"three": "https://unpkg.com/three@0.154.0/build/three.module.js",
+				"three/addons/": "https://unpkg.com/three@0.154.0/examples/jsm/",
+				"@pixiv/three-vrm": "./three-vrm.module.min.js"
 			}
-		</script>
+		}
+	</script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/20.0.0/tween.umd.js"></script>
 
-		<script>
-			var pockitId = location.pathname.split("/").slice(-1)[0].split(".")[0];
-		</script>
-		<script src="main.js" type="module"></script>
-	</body>
+	<script>
+		var pockitId = location.pathname.split("/").slice(-1)[0].split(".")[0];
+	</script>
+	<script src="main.js" type="module"></script>
+</body>
 </html>
