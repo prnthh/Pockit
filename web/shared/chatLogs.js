@@ -27,12 +27,13 @@ const chatLogs = {
 }
 
 const news = [
-    `Latest news here!
-    v0.1 is out. im so happy. 
-    i love you all.
-    
-    introducing chat mode.
-    chat with milady to unlock poses.`,
+`Latest news here!
+v0.1 is out. im soo 
+i love you all.
+
+please stay tuned 
+for more updates 
+next weekend.`,
 ]
 
 export {chatLogs, news}
