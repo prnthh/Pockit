@@ -15,34 +15,36 @@
 </head>
 
 <body>
+	<div id="status-bar">
+		<div style="width:20px"></div>
+		<span id="status-bar-title"></span>
+		<span id="status-bar-status" class="btn">0 ♡︎♥ </span>
+	</div>
 	<div id="console">
-		<div id="status-bar">
-			<div style="width:20px"><span id="status-bar-back" class="btn">Back</span></div>
-			<span id="status-bar-title"></span>
-			<span id="status-bar-status" class="btn">0 ♡︎♥ </span>
-		</div>
-		<div id="app-container">
-			<!-- App icons will be loaded here -->
-		</div>
-		
 		<!-- Individual app screens will be loaded here -->
 		<div id="screen-container">
 			<div id="Model-screen" class="app-screen">
-				<button id="download-model">Download model (copy to clipboard)</button>
+				(copy to clipboard)
+				<button id="download-model">Download model</button>
 				<button id="download-newtab">Open in new tab</button>
 			</div>
 			<div id="PhotoBooth-screen" class="app-screen">
 				<div id="pose-list" class="title">📸</div>
-				<div>Continue the story to unlock all poses!</div>
 			</div>
-			<div id="Chat-screen" class="app-screen">
-				<div id="chat-log"></div>
-				<div id="chat-options"></div>
-				
-			</div>
+			<div id="Game-screen" class="app-screen">Coming Soon!</div>
 			<div id="NewsBoard-screen" class="app-screen">
 			</div>
 		</div>
+		<div id="app-container">
+			<!-- App icons will be loaded here -->
+			loading, please wait...
+		</div>
+	</div>
+
+	<div id="Chat-screen">
+		<div id="chat-log"></div>
+		<div id="chat-options"></div>
+		
 	</div>
 	
 	<!-- Import maps polyfill -->
