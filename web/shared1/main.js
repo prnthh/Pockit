@@ -6,6 +6,7 @@ import { loadMixamoAnimation } from '../loadMixamoAnimation.js';
 import { chatLogs } from './chatLogs.js';
 
 const availableAnimations = ["Idle", "Quick Formal Bow", "Rumba", "Scared", "Silly Dancing", "Thinking", "Standing Greeting", "Blow A Kiss", "Drunk", "Loser", "Sitting", "Standing 1", "Standing 2", "Crouch", "Dynamic", "Offensive", "Standing 2", "Throw", "Drop Kick", "Walking"];
+const maps = ["mindpalace2", "sakura_park", "ritual_platform", "room", "windows", "tennis_court", "greenscreen", "bedroom", "stage"];
 const assetDirectory = "./shared1";
 
 const renderer = new THREE.WebGLRenderer({antialias: false});
@@ -54,69 +55,87 @@ class Character
 		this.group = new THREE.Group();
 	}
 	
-	async loadVRM( modelUrl, modelId = 'protagonist' ) {
+	async loadVRM( modelUrl) {
 		// helperRoot.clear();
-		showLoadingScreen(true, modelUrl);
-		gltfLoader.register( ( parser ) => {
-			return new VRMLoaderPlugin( parser, {
-				// helperRoot: helperRoot,
-				autoUpdateHumanBones: true
+		return new Promise((resolve, reject) => {
+			showLoadingScreen(true, modelUrl);
+			gltfLoader.register( ( parser ) => {
+				return new VRMLoaderPlugin( parser, {
+					// helperRoot: helperRoot,
+					autoUpdateHumanBones: true
+				});
 			});
-		});
-		
-		gltfLoader.load(modelUrl, ( gltf ) =>
-		{
-			const vrm = gltf.userData.vrm;
-			console.log(gltf);
-			if ( this.vrm ) {
-				scene.remove( this.vrm.scene );
-				scene.remove( this.group );
-				VRMUtils.deepDispose( this.vrm.scene );
-			}
 			
-			// put the model to the scene
-			this.vrm = vrm;
-			this.group.add(this.vrm.scene);
-			scene.add(this.group);
-			
-			// Disable frustum culling
-			vrm.scene.traverse( ( obj ) => {
-				// obj.frustumCulled = false;
-				obj.castShadow = true;
-			} );
-			
-			this.vrm.mixer = new THREE.AnimationMixer( this.vrm.scene );
-			this.vrm.mixer.addEventListener( 'finished', ( e) => {
+			gltfLoader.load(modelUrl, ( gltf ) =>
+			{
+				const vrm = gltf.userData.vrm;
+				console.log(gltf);
+				if ( this.vrm ) {
+					scene.remove( this.vrm.scene );
+					scene.remove( this.group );
+					VRMUtils.deepDispose( this.vrm.scene );
+				}
+				
+				// put the model to the scene
+				this.vrm = vrm;
+				this.group.add(this.vrm.scene);
+				scene.add(this.group);
+				
+				// Disable frustum culling
+				vrm.scene.traverse( ( obj ) => {
+					// obj.frustumCulled = false;
+					obj.castShadow = true;
+				} );
+				
+				this.vrm.mixer = new THREE.AnimationMixer( this.vrm.scene );
+				this.vrm.mixer.addEventListener( 'finished', ( e) => {
+					this.playNextAnimation();
+				} );
 				this.playNextAnimation();
-			} );
-			this.playNextAnimation();
-			
-			// rotate if the VRM is VRM0.0
-			VRMUtils.rotateVRM0( vrm );
-			showLoadingScreen(false, modelUrl);
-			console.log( vrm );
-		},
-		( progress ) => console.log( 'Loading model...', 100.0 * ( progress.loaded / progress.total ), '%' ),
-		( error ) => console.error( error ));
+				
+				// rotate if the VRM is VRM0.0
+				VRMUtils.rotateVRM0( vrm );
+				showLoadingScreen(false, modelUrl);
+				console.log( vrm );
+				resolve( vrm );
+			},
+			( progress ) => console.log( 'Loading model...', 100.0 * ( progress.loaded / progress.total ), '%' ),
+			( error ) => reject(error));
+		});
 	}
 	
-	loadFBX(animationUrl) {
+	async loadFBX(animationUrl) {
 		console.log("Loading animation: " + animationUrl);
+		if(this.loadedActions && this.loadedActions[animationUrl])
+		{
+			console.log("Animation already loaded: " + animationUrl);
+			let newAction = this.vrm.mixer.clipAction(this.loadedActions[animationUrl].clone());
+			this.playAnimation(newAction);
+			return;
+		} else if(!this.loadedActions) {
+			this.loadedActions = {};
+		}
 		loadMixamoAnimation(animationUrl, this.vrm).then((clip) => {
+			this.loadedActions[animationUrl] = clip.clone();
 			let newAction = this.vrm.mixer.clipAction(clip);
-			newAction.setLoop(THREE.LoopOnce);
-			if(newAction._clip.duration > 0.5)
-			newAction.clampWhenFinished = true;
-			loadedActions[animationUrl] = newAction;
 			this.playAnimation(newAction);
 		});
 	}
 	
 	playAnimation(newAction){
+		if(newAction._clip.duration > 0.5)
+		{
+			newAction.clampWhenFinished = true;
+			newAction.setLoop(THREE.LoopOnce);
+		} else {
+			newAction.setLoop(THREE.LoopRepeat, 1000);
+			
+		}
+		
 		if (this.currentAction) {
 			// currentAction.reset();
-			console.log(this.vrm.humanoid.getNormalizedBoneNode( 'hips' ).position.y)
-			this.vrm.humanoid.getNormalizedBoneNode( 'hips' ).position.y = 0;
+			// console.log(this.vrm.humanoid.getNormalizedBoneNode( 'hips' ).position.y)
+			// this.vrm.humanoid.getNormalizedBoneNode( 'hips' ).position.y = 0;
 			this.currentAction.crossFadeTo(newAction, 0.1, false);
 		}
 		
@@ -125,7 +144,7 @@ class Character
 	}
 	
 	playNextAnimation() {		
-		this.loadFBX(assetDirectory + "/" + (this.animationQueue.shift()|| "Idle") + ".fbx");
+		this.loadFBX(assetDirectory + "/" + (this.animationQueue.shift()|| (this.walkTarget && "Walking") || "Idle") + ".fbx");
 	}
 	
 	playSpecificAnimation(animationName) {
@@ -156,18 +175,44 @@ class Character
 		});
 	}
 	
-	rotateToFace(objectToRotate, targetPosition) {
-		// targetPosition = targetObject.getWorldPosition();
-		var objectPosition = new THREE.Vector3();
-		objectToRotate.getWorldPosition(objectPosition);
-		
-		var angle = Math.atan2(targetPosition.x - objectPosition.x, targetPosition.z - objectPosition.z);
-		objectToRotate.rotation.y = angle;
+	async processInstruction(instruction) {
+		return new Promise(async (resolve, reject) => {
+			console.log("Processing instruction: " + instruction);
+			var instructionArray = instruction.split(' ');
+			const instructionType = instructionArray.shift();
+			switch(instructionType) {
+				case "anim":
+				const path = instructionArray.join(' ');
+				await this.loadFBX(`${assetDirectory}/${path}.fbx`, this.vrm);
+				break;
+				case "character":
+				const characterId = instructionArray.shift();
+				currentVrms[characterId].playSpecificAnimation(instructionArray.shift());
+				break;
+				case "walkto":
+				const target = instructionArray.shift().split(',');
+				const targetVector = {"position": new THREE.Vector3(target[0], 0, target[1]), "rotation": this.group.rotation};
+				this.walkTo(targetVector.position);
+				// animateCameraToFace(targetVector)
+
+				break;
+				case "face":
+				currentVrms[instructionArray[1]].playSpecificAnimation(instructionArray[2]);
+				break;
+			}
+			resolve();
+		});
+	}
+	
+	
+	walkTo(targetPosition) {
+		this.playSpecificAnimation("Walking");
+		this.walkTarget = new THREE.Vector3(targetPosition.x, 0, targetPosition.z);
 	}
 }
 
 class Room {
-	constructor(name = "mindpalace2") {
+	constructor(name = "mindpalace") {
 		this.name = name;
 		this.stage = undefined;
 		this.loadStage(name)
@@ -223,11 +268,6 @@ function drawFloor()
 	scene.add(floorMesh);
 }
 
-function cameraLookAt(source, target) {
-	cameraPosition = source;
-	cameraTarget = target;
-}
-
 function animate() {
 	requestAnimationFrame( animate );
 	const deltaTime = clock.getDelta();
@@ -243,6 +283,24 @@ function animate() {
 			// var cameraTarget = group.position.clone();
 			// cameraTarget.y += 1.0;
 			// controls.target.copy(cameraTarget);
+			
+			if(character.group && character.walkTarget)
+			{
+				//gradually rotate to face target
+				var rotationDelta = character.group.rotation.y - Math.atan2(character.walkTarget.x - character.group.position.x, character.walkTarget.z - character.group.position.z);
+				if(rotationDelta > Math.PI) rotationDelta -= 2 * Math.PI;
+				if(rotationDelta < -Math.PI) rotationDelta += 2 * Math.PI;
+				character.group.rotation.y -= rotationDelta * 0.075;
+				
+				var newPosition = character.group.position;
+				newPosition.x += 0.02 * Math.sin(character.group.rotation.y);
+				newPosition.z += 0.02 * Math.cos(character.group.rotation.y);
+				if(character.group.position.distanceTo(character.walkTarget) < 0.1)
+				{
+					character.walkTarget = undefined;
+					character.playSpecificAnimation("Idle");
+				}
+			}
 		}
 	});
 	
@@ -252,6 +310,7 @@ function animate() {
 		controls.target.lerp(cameraTarget, 0.1);
 		if(controls.target.distanceTo(cameraTarget) < 0.1) cameraTarget = undefined;
 	}
+	
 	if(cameraPosition){
 		camera.position.lerp(cameraPosition, 0.1);
 		if(camera.position.distanceTo(cameraPosition) < 0.1) cameraPosition = undefined;
@@ -275,29 +334,23 @@ const params = {
 // 	currentMixer.timeScale = value;
 // } );
 
-// file input
-
-// dnd handler
 window.addEventListener( 'dragover', function ( event ) {
 	event.preventDefault();
 } );
 
 window.addEventListener( 'drop', function ( event ) {
 	event.preventDefault();
-	
-	// read given file then convert it to blob url
 	const files = event.dataTransfer.files;
-	if ( ! files ) return;
-	
+	if (!files) return;
 	const file = files[ 0 ];
-	if ( ! file ) return;
+	if (!file) return;
 	
 	const fileType = file.name.split( '.' ).pop();
 	const blob = new Blob( [ file ], { type: 'application/octet-stream' } );
 	const url = URL.createObjectURL( blob );
 	
 	if ( fileType === 'fbx' ) loadFBX( url );
-	else {currentVrms['dropin'] = new Character("protagonist", defaultModelUrl, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0), new THREE.Vector3(1,1,1));
+	else {currentVrms['dropin'] = new Character("protagonist");
 	currentVrms['dropin'].loadVRM( url );}
 } );
 
@@ -349,7 +402,7 @@ function setupDropdownMenu(containerId, options, callback) {
 }
 
 async function initiateChatNode(chatId) {
-	var chatItem = chatLogs[chatId];
+	var chatItem = getChatItem(chatId);
 	if(!chatItem) {
 		console.log("Chat item not found: " + chatId);
 		domNode('Chat-screen').style.display = 'none';
@@ -364,23 +417,22 @@ async function initiateChatNode(chatId) {
 	chatBox.innerHTML = '';
 	chatBox.style.textAlign = 'left';
 	chatItem.map && currentStage.loadStage(chatItem.map);
-	(chatItem.animation && currentVrms['protagonist'].playSpecificAnimation(chatItem.animation));
+	// (chatItem.animation && currentVrms['protagonist'].playSpecificAnimation(chatItem.animation));
 	if(chatItem.from) {
 		domNode('chat-name').innerHTML = chatItem.from;
-		var target = currentVrms[chatItem.from].group.position.clone();
-		target.y = modelHeight + 0.5;
-		let rotation = currentVrms[chatItem.from].group.rotation;
-		let distance = 3; // Change this to the desired distance
-		
-		// Calculate the position in front of the group
-		var cameraPosition = new THREE.Vector3(distance * Math.sin(rotation.y),0.5,distance * Math.cos(rotation.y));
-		cameraPosition.add(target);
-		cameraLookAt(cameraPosition, target);
+		animateCameraToFace(currentVrms[chatItem.from].group)
 	} 
 	else 
 	{
 		domNode('chat-name').innerHTML = "narrator";
 		cameraLookAt(new THREE.Vector3(0, 4, 8), new THREE.Vector3(0, 1, 0));
+	}
+	
+	if(chatItem.animation)
+	{
+		chatItem.animation.forEach(instruction => {
+			processInstruction(instruction);
+		});
 	}
 	
 	for (let i = 0; i < msgArray.length; i++) {
@@ -390,10 +442,55 @@ async function initiateChatNode(chatId) {
 	showOptions(chatItem);
 }
 
+function cameraLookAt(source, target) {
+	cameraPosition = source;
+	cameraTarget = target;
+}
+
+function animateCameraToFace(target)
+{
+	let targetPosition = new THREE.Vector3(target.position.x, target.position.y + modelHeight + 0.5, target.position.z);
+	let targetRotation = target.rotation;
+	let distance = 3; // Change this to the desired distance
+	
+	// Calculate the position in front of the group
+	var cameraPosition = new THREE.Vector3(distance * Math.sin(targetRotation.y),0.5,distance * Math.cos(targetRotation.y));
+	cameraPosition.add(targetPosition);
+	cameraLookAt(cameraPosition, targetPosition);
+}
+
+async function processInstruction(instruction) {
+	return new Promise(async (resolve, reject) => {
+		console.log(instruction)
+		
+		var instructionArray = instruction.split(' ');
+		const instructionType = instructionArray.shift();
+		switch(instructionType) {
+			case "load":
+			const id = instructionArray.shift();
+			const path = instructionArray.shift();
+			currentVrms[id] = new Character(id);
+			await currentVrms[id].loadVRM(path);
+			break;
+			case "character":
+			const characterId = instructionArray.shift();
+			await currentVrms[characterId].processInstruction(instructionArray.join(' '));
+			break;
+			case "loadingcomplete":
+			loadingCallback = function(){initiateChatNode("begin")};
+			break;
+			case "goto":
+			initiateChatNode(instructionArray[1]);
+			break;
+		}
+		resolve();
+	});
+}
 
 
 function showOptions(chatItem) {
 	let chatBox = domNode('chat-options');
+	chatBox.style.display = 'block';
 	chatBox.style.textAlign = 'center';
 	chatItem.response.forEach(response => {
 		const resp = `[${response}]`;
@@ -404,7 +501,7 @@ function showOptions(chatItem) {
 			// printToChat(resp, true);
 			chatBox.innerHTML = '';
 			initiateChatNode(response);
-			doober(assetDirectory + "/www.png", 1, {x: window.innerWidth/2, y: window.innerHeight/2}, {x: 0, y: 0});
+			doober(assetDirectory + "/smile.png", 1, {x: window.innerWidth/2, y: window.innerHeight/2}, {x: 0, y: 0});
 		};
 		chatBox.appendChild(optionButton);
 	});
@@ -412,25 +509,24 @@ function showOptions(chatItem) {
 
 document.addEventListener('DOMContentLoaded', function() {
 	// loadBlobFromLocalStorage();
-	currentVrms['protagonist'] = new Character("protagonist", defaultModelUrl, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0), new THREE.Vector3(1,1,1));
-	currentVrms['protagonist'].loadVRM( defaultModelUrl );
+	processInstruction("load protagonist " + defaultModelUrl);
 	currentStage = new Room();
 	drawFloor();
 	renderer.domElement.addEventListener('click', onMouseClick, false);
 	
 	// setupAppScreen();
 	setupDropdownMenu('pose-list', availableAnimations, currentVrms['protagonist'].playSpecificAnimation.bind(currentVrms['protagonist']));
-	setupDropdownMenu('bg-list', ["mindpalace", "sakura_park", "room", "windows", "tennis_court", "greenscreen", "bedroom", "stage"], currentStage.loadStage.bind(currentStage));
-	setupDropdownMenu('demo-list', ["tweet", "news", "simple story"], initiateChatNode);
-	setupDropdownMenu('prop-list', ["pistol", "news"], currentVrms['protagonist'].loadObject.bind(currentVrms['protagonist']));
-	setupDropdownMenu('help-list', ["About"], showInfo);
+	setupDropdownMenu('bg-list', maps, currentStage.loadStage.bind(currentStage));
+	setupDropdownMenu('prop-list', ["pistol"], currentVrms['protagonist'].loadObject.bind(currentVrms['protagonist']));
+	setupDropdownMenu('demo-list', ["simple story", "Instancing", "tweet", "news", ], lazyLoadMode);
+	setupDropdownMenu('help-list', ["About", "Ads"], lazyLoadMode);
 	
 	// set up model screen
-	domNode('download-model').onclick = function() {
+	domNode('download-model').onclick = () => {
 		safeDownloadUrl("https://prnth.com/Pockit/web/"+ window.pockitId + ".vrm");
 	};
 	
-	domNode('download-newtab').onclick = function() {
+	domNode('download-newtab').onclick = () => {
 		safeDownloadUrl("https://prnth.com/Pockit/web/"+ window.pockitId  + ".html");
 	};
 	
@@ -457,21 +553,9 @@ function onMouseClick(event) {
 	
 	if (intersects.length > 0) {
 		var point = intersects[0].point;
-		currentVrms['protagonist'].playSpecificAnimation("Walking");
-		currentVrms['protagonist'].walkTarget = new THREE.Vector3(point.x, 0, point.z);
-		var distance = currentVrms['protagonist'].group.position.distanceTo(currentVrms['protagonist'].walkTarget);
-		new TWEEN.Tween(currentVrms['protagonist'].group.position)
-		.to({ x: point.x, z: point.z }, distance * 500)
-		.easing(TWEEN.Easing.Linear.None)
-		.start().onComplete(function() {
-			console.log(currentVrms['protagonist'].group.position.distanceTo(currentVrms['protagonist'].walkTarget))
-			if(currentVrms['protagonist'].group.position.distanceTo(currentVrms['protagonist'].walkTarget) < 0.1)
-			currentVrms['protagonist'].playSpecificAnimation("Idle");
-		});
-		point.y = modelHeight + 0.5;
+		currentVrms['protagonist'].walkTo(new THREE.Vector3(point.x, 0, point.z));
 		cameraTarget = point;
 		
-		currentVrms['protagonist'].rotateToFace(currentVrms['protagonist'].group, point);
 	}
 }
 
@@ -486,7 +570,14 @@ function safeDownloadUrl(url) {
 	window.open(url, '_blank');
 }
 
+function getChatItem(chatId) {
+	return chatLogs.find(item => item.id === chatId);
+}
 
+function getChatItemList()
+{
+	return chatLogs.map(item => item.id);
+}
 
 function domNode(id) {
 	return document.getElementById(id);
@@ -507,7 +598,7 @@ function doober(imagePath, instances = 1, from, to) {
 	dooberItem.className = 'doober';
 	dooberItem.style.left = from.x + "px";
 	dooberItem.style.top = from.y + "px";
-
+	
 	document.body.appendChild(dooberItem);
 	let currentPosition = { top: parseInt(from.y, 10) };
 	new TWEEN.Tween(currentPosition)
@@ -521,20 +612,44 @@ function doober(imagePath, instances = 1, from, to) {
 }
 
 function showInfo(option) {
-	showInfoPopup(true, "<center>Pockit is an on-chain digital pet and fantasy console. <br><br> This application is under active development. If you face issues, please clear your cache or try a different browser.</center>");
 }
 
 async function loadGameMode(mode) {
-    try {
-        const modulePath = `./modes/${mode}.js`;
-        const gameModeModule = await import(modulePath);
-        return gameModeModule.default;
-    } catch (error) {
-        console.error('Failed to load game mode:', error);
-    }
+	try {
+		const modulePath = `./modes/${mode}.js`;
+		const gameModeModule = await import(modulePath);
+		return gameModeModule.default;
+	} catch (error) {
+		console.error('Failed to load game mode:', error);
+	}
 }
 
-loadGameMode('Adventure').then(AdventureMode => {
-    const adventure = AdventureMode(Character);
-    // Initialize and start the adventure game mode
-});
+function lazyLoadMode(mode = "Adventure") {
+	switch(mode) {
+		case "Instancing":
+		loadGameMode("Instancing").then(InstancingMode => {
+			const adventure = InstancingMode(Character, currentVrms, animateCameraToFace);
+		});
+		break;
+		case "Ads":
+		loadGameMode("Adventure").then(AdventureMode => {
+			// const adventure = AdventureMode(Character, currentVrms, animateCameraToFace);
+			// Initialize and start the adventure game mode
+			const ads = [{"name":"Koolskull's Heads With Hats and Masks"}, {"name":"High Integrity Milady"}];
+			var stringToPrint = "";
+			ads.forEach(ad => {
+				stringToPrint += `<div class="ad">${ad.name}</div>`;
+			});
+			showInfoPopup(true,stringToPrint);
+		});
+		break;
+		default:
+		if(getChatItemList().includes(mode))
+		initiateChatNode(mode);
+		else
+		showInfoPopup(true, "<center>Pockit is an on-chain digital pet and fantasy console. <br><br> This application is under active development. If you face issues, please clear your cache or try a different browser.</center>");
+		break;
+	}
+	
+}
+// lazyLoadMode();

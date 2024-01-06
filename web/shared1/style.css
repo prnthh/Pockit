@@ -1,23 +1,34 @@
 html, body { min-height: 100%; }
 
+:root {
+    --theme: rgb(255, 204, 252);
+    --theme-transparent: rgba(255, 211, 251, 0.777);
+    --theme-background: rgb(255, 239, 254);
+    --theme-background-alt: rgb(243, 230, 241);
+    --font-main: 'Rajdhani', sans-serif;
+}
+
 body {
-    font-family: 'VT323', monospace;
+    font-family: var(--font-main);
     cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABFklEQVRYR9WXURLDIAhE6/0PbSdOtUpcd1Gnpv1KGpTHBpCE1/cXq+vrMph7dGvXZTtpfW10DCA5jrH1H0Jhs5E0hnZdCR+vb5S8Nn8mQCeS9BdSalYJqMBjAGzq59xAESN7VFVUgV8AZB/dZBR7QTFDCqGquvUBVVoEtgIwpQRzmANSFHgWQKExHdIrPeuMvQNDarXe6nC/AutgV3JW+6bgqQLeV8FekRtgV+ToDKEKnACYKsfZjjkam7a0ZpYTytwmgainpC3HvwBocgKOxqRjehoR9DFKNFYtOwCGYCszobeCbl26N6yyQ6g8X/Wex/rBPsNEV6qAMaJPMynIHQCoSqS9JSMmwef51LflTgCRszU7DvAGiV6mHWfsaVUAAAAASUVORK5CYII=),auto;
     margin: 0;
     image-rendering: pixelated;
 }
 
-#loading-screen {
+#loading-screen, #info-popup, #console, #Chat-screen {
     position: fixed;
-    width: 100%;
-    height: 100%;
-    z-index: 100;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(246, 194, 255,0.8) 100%);
     transition: all 0.2s;
+}
+
+#loading-screen {
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, var(--theme) 100%);
 }
 
 #loading-text {
@@ -29,18 +40,33 @@ body {
     animation: rotateY-anim 5s cubic-bezier(0.42, 0, 0.58, 1) infinite;
 }
 
+.ui-box {
+    background-color: var(--theme);
+    background: linear-gradient(var(--theme), #d3a6fd);
+    max-width: 90%;
+    border: 1px solid black;
+    border-radius: 3px;
+    padding: 4px;
+    box-shadow: inset -1px -1px 2px 0px rgba(0, 0, 0, 0.5), inset 1px 1px 2px 0px rgba(255, 255, 255, 0.5);
+}
+
 #info-popup {
     display: none;
-    position: fixed;
     z-index: 200;
     top: 50%; left: 50%;
     transform: translateX(-50%) translateY(-50%);
-    width: 90%;
-    max-width: 400px;
-    flex-direction: column;
     justify-content: space-between;
-    align-items: center;
-    transition: all 0.2s
+    text-align: center;
+    
+}
+
+#info-popup #info-popup-close {
+    position: fixed;
+    right: 0;
+}
+
+#info-popup-content {
+    background-color: var(--theme-background);
 }
 
 canvas {
@@ -64,7 +90,9 @@ canvas {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    background-color: rgba(255, 211, 251, 0.777)
+    background-color: var(--theme-transparent);
+    font-size: 1.2rem;
+    
 }
 
 .dropdown-option {
@@ -76,14 +104,6 @@ canvas {
 
 .dropdown-option:hover {
     background-color: rgba(0, 0, 0, 0.2);
-}
-
-.ui-box {
-    background-color: rgb(255, 239, 254);
-    border: 4px solid rgb(255, 204, 252); 
-    border-radius: 3px;
-    padding: 8px;
-    box-shadow: inset -1px -1px 2px 0px rgba(0,0,0,0.5), inset 1px 1px 2px 0px rgba(0,0,0,0.5);
 }
 
 #Chat-screen {
@@ -98,7 +118,7 @@ canvas {
 }
 
 .consoleShape {
-    background-color: rgb(255, 204, 252);
+    background-color: var(--theme);
     padding: 2px 8px;
     clip-path: polygon(90% 0%, 100% 30%, 100% 100%, 0% 100%, 0% 100%, 0% 0%);
     border-radius: 2px;
@@ -106,32 +126,26 @@ canvas {
 
 #chat-name {
     position: fixed;
-    top: 0x; left: 10px; transform: translateY(calc(-100% - 8px));
+    top: 0x; left: 10px; transform: translateY(calc(-100%));
 }
 
 button {
     border: none;
-    background-color: rgba(0, 0, 0, 0.053);
+    background-color: rgba(0, 0, 0, 0.1);
+    
+    /* box-shadow: inset -1px -1px 2px 0px rgba(0, 0, 0, 0.5), inset 1px 1px 2px 0px rgba(0, 0, 0, 0.5); */
     margin: 0px 4px;
-    border: 4px solid rgba(0, 0, 0, 0.119);
-    font-family: 'VT323', monospace;
+    font-family: 'Rajdhani', sans-serif;
     font-size: 1.2rem;
-    /* border-radius: 4px; */
-    /* box-shadow: inset -1px -1px 2px 0px rgba(0,0,0,0.5), inset 1px 1px 2px 0px rgba(255, 255, 255, 0.25); */
     transition: all 0.1s;
 }
 
 button:hover {
     background-color: rgba(0, 0, 0, 0.3);
-    box-shadow: unset;
 }
 
 button:active {
     background-color: rgba(0, 0, 0, 0.4);
-}
-
-.btn {
-    cursor: pointer;
 }
 
 .title {
@@ -139,25 +153,44 @@ button:active {
     justify-content: center;
 }
 
-.option-list {
-    display: flex;
-    flex-direction: column;
-    /* flex-wrap: wrap; */
-    overflow-y: scroll;
-    justify-content: flex-start;
-    max-width: 200px;
-    height: 200px;
-}
-
 #chat-log {
     overflow-y: scroll;
     max-height: 100px;
+    width: 100%;
+    background-color: var(--theme-background);
+
+    padding: 5px;
+    box-sizing: border-box;
+    box-shadow: inset -1px -1px 2px 0px rgba(0,0,0,0.5), inset 1px 1px 2px 0px rgba(0,0,0,0.5);
+
+}
+
+.scanlines {
+    text-shadow: 0 0 5px #C8C8C8;
+    background: repeating-linear-gradient(
+        0deg,
+        var(--theme-background),
+        var(--theme-background) 8px,
+        var(--theme-background-alt) 8px,
+        var(--theme-background-alt) 14px,
+        var(--theme-background) 14px,
+        var(--theme-background) 15px
+    );
+    background-size: 100% 1024px; /* Adjust size as needed */
+
+    background-repeat: repeat-y;
+    animation: scrollBackground 256s linear infinite;
 }
 
 #chat-options {
-    padding: 5px;
+    display: none;
+    width: 100%;
+    padding: 2px;
 }
 
+
+
+/* dropdown menu stuff */
 
 .dropdown {
     position: relative;
@@ -166,8 +199,7 @@ button:active {
 
 .dropdown > span {
     display: block;
-    padding: 2px 10px;
-    font-size: 1.4rem;
+    padding: 0px 10px;
 }
 
 .dropdown > span:hover {
@@ -205,17 +237,35 @@ button:active {
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
 }
 
+.option-list {
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    justify-content: flex-start;
+    max-width: 200px;
+    height: 200px;
+}
+
 .doober {
     width: 24px;
     position: absolute;
     transform: translate(-50%, -50%);
-    color: gold;
+    z-index: 300;
+}
+
+.ad {
+    width: 300px;
+    max-width: 90vw;
+    aspect-ratio: 3 / 1;
+    background-color: rgba(0, 0, 0, 0.2);
+    margin: 2px;
 }
 
 #network-indicator {
     height: 30px;
     width: 30px;
     background-repeat: no-repeat;
+    border: 4px solid transparent;
     background-image: url("data:image/svg+xml,%09%09%09%09%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%20-10%20100%20105%22%20x%3D%220px%22%20y%3D%220px%22%3E%3Crect%20x%3D%2245.154909407%22%20y%3D%2275.106995306%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%225.154909407%22%20y%3D%225.106995306%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%2215.154909407%22%20y%3D%2215.106995306%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%2225.154909407%22%20y%3D%2225.106995306%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%2225.154909407%22%20y%3D%2255.106995306%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%2265.154909407%22%20y%3D%2255.106995306%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%2235.189708337%22%20y%3D%2245.106995306%22%20width%3D%2229.965201069%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%225.154909407%22%20y%3D%2235.106995306%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%2285.154909407%22%20y%3D%2235.106995306%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%2275.154909407%22%20y%3D%2225.106995306%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%2235.154909407%22%20y%3D%2215.106995306%22%20width%3D%2240%22%20height%3D%2210%22%2F%3E%3Crect%20x%3D%2275.154909407%22%20y%3D%2275.106995306%22%20width%3D%2210%22%20height%3D%229.999938965%22%2F%3E%3Crect%20x%3D%2285.154909407%22%20y%3D%2285.106995306%22%20width%3D%2210%22%20height%3D%2210%22%2F%3E%3C%2Fsvg%3E%0A");
 }
 
@@ -242,20 +292,29 @@ button:active {
     }
 }
 
+@keyframes scrollBackground {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100%; }
+}
+
 @media only screen and (max-width: 300px) {
     .dropdown > span {
         padding: 0px 4px;
         font-size: 1rem;
     }
-
+    
     .dropdown-content {
         margin-left: -10px;
     }
-
+    
     .dropdown-content > .dropdown:hover > .dropdown-content {
         left: 20%;
     }
-
+    
+    button {
+        font-size: 1rem;
+    }
+    
     #network-indicator {
         height: 20px;
         width: 20px;
