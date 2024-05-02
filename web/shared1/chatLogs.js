@@ -1,8 +1,4 @@
 const stateMachineActions = {
-    "standing greeting": [
-        "map bedroom",
-        "character protagonist anim Standing Greeting",
-    ],
     "startseance": [
         "map seance",
         "character pockit1 113",
@@ -14,7 +10,7 @@ const stateMachineActions = {
     ],
     "showRoom": [
         "map bedroom",
-        "character protagonist walkto 1,3",
+        "character protagonist walkto -1,3",
     ],
 }
 
@@ -22,9 +18,9 @@ const chatLogs = [
     {
         "id": "begin",
         "msg": "This is a Pockit. Would you like to take a tour?",
-        "animation": stateMachineActions["standing greeting"],
+        "animation": ["map chairs/1",  "character protagonist position 0,0", "character protagonist anim Standing Greeting", "character protagonist rotation 0", "camera protagonist", ],
         "response": [
-            "tour",
+            "cracked old man",
             "free play",
         ]
     },
@@ -32,7 +28,7 @@ const chatLogs = [
         "id": "tour",
         "from": "protagonist",
         "msg": "Hi! I'm milady. Welcome to my room. Let me show you around.",
-        "animation": ["character protagonist anim Quick Formal Bow"],
+        "animation": ["character protagonist anim Quick Formal Bow", "map bedroom"],
         "response": [
             "greetings1",
             "greetings2",
@@ -40,7 +36,7 @@ const chatLogs = [
     },
     {
         "id": "greetings1",
-        "msg": "you have taken the drastic path",
+        "msg": "This is my computer. I use it to do my homework.",
         "animation": stateMachineActions["showRoom"],
         "response": [
             "greetings3",
@@ -49,7 +45,7 @@ const chatLogs = [
     {
         "id": "greetings2",
         "msg": "you have chosen the path of least resistance",
-        "map": "greenscreen",
+        "animation": ["map greenscreen"],
         "response": [
             "greetings3",
         ]
@@ -69,31 +65,6 @@ const chatLogs = [
             "news1",
             "news2",
             "news3",
-        ]
-    },
-    {
-        "id": "simple story",
-        "map": "stage",
-        "animation": ["character protagonist anim Walking"],
-        "msg": "One day milady was walking down the street and she saw a cat.",
-        "response": [
-            "story1",
-        ]
-    },
-    {
-        "id": "story1",
-        "animation": ["character protagonist anim Scared"],
-        "msg": "She tried to pet it but it ran away.",
-        "response": [
-            "story2",
-        ]
-    },
-    {
-        "id": "story2",
-        "animation": ["character protagonist anim Thinking"],
-        "msg": "She was sad.",
-        "response": [
-            "story3",
         ]
     },
 ]

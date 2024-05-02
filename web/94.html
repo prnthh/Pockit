@@ -42,8 +42,8 @@
 				<div class="dropdown">
 					<span>File</span>
 					<div class="dropdown-content"' id="Model-screen"'>
-						(copy to clipboard)
-						<button id="download-model">Download model</button>
+						<textarea id="download-url"></textarea>
+						<button id="download-model">Copy Link</button>
 						<button id="download-newtab">Open in new tab</button>
 					</div>
 				</div>
@@ -57,15 +57,15 @@
 							</div>
 						</div>
 						<div class="dropdown">
-							<span>Background ></span>
-							<div class="dropdown-content">
-								<div id="bg-list" class="option-list">📸</div>
-							</div>
-						</div>
-						<div class="dropdown">
 							<span>Props ></span>
 							<div class="dropdown-content">
 								<div id="prop-list" class="option-list">📸</div>
+							</div>
+						</div>
+						<div class="dropdown">
+							<span>Background ></span>
+							<div class="dropdown-content">
+								<div id="bg-list" class="option-list">📸</div>
 							</div>
 						</div>
 					</div>
@@ -99,6 +99,8 @@
 		var pockitId = location.pathname.split("/").slice(-1)[0].split(".")[0];
 	</script>
 	<script src="shared1/main.js" type="module"></script>
+	
+	<div id="container"></div>
 	
 	<!-- Google tag (gtag.js) -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZPS50VC97K"></script>

@@ -1,10 +1,11 @@
 html, body { min-height: 100%; }
 
 :root {
-    --theme: rgb(255, 204, 252);
-    --theme-transparent: rgba(255, 211, 251, 0.777);
-    --theme-background: rgb(255, 239, 254);
-    --theme-background-alt: rgb(243, 230, 241);
+    --theme: rgb(128, 128, 128);
+    --theme-alt: rgb(202, 202, 202);
+    --theme-transparent: rgba(74, 74, 74, 0.777);
+    --theme-background: rgb(219, 219, 219);
+    --theme-background-alt: rgb(233, 233, 233);
     --font-main: 'Rajdhani', sans-serif;
 }
 
@@ -42,7 +43,7 @@ body {
 
 .ui-box {
     background-color: var(--theme);
-    background: linear-gradient(var(--theme), #d3a6fd);
+    background: linear-gradient(var(--theme), var(--theme-alt));
     max-width: 90%;
     border: 1px solid black;
     border-radius: 3px;
